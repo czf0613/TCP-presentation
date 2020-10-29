@@ -1,0 +1,52 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "Alamofire",
+        "repositoryURL": "https://github.com/Alamofire/Alamofire.git",
+        "state": {
+          "branch": null,
+          "revision": "becd9a729a37bdbef5bc39dc3c702b99f9e3d046",
+          "version": "5.2.2"
+        }
+      },
+      {
+        "package": "HandyJSON",
+        "repositoryURL": "https://github.com/alibaba/HandyJSON.git",
+        "state": {
+          "branch": null,
+          "revision": "dcf39cf062680ffa4fd0acb7f9117a97755c113f",
+          "version": "5.0.2"
+        }
+      },
+      {
+        "package": "Starscream",
+        "repositoryURL": "https://github.com/daltoniam/Starscream.git",
+        "state": {
+          "branch": null,
+          "revision": "df8d82047f6654d8e4b655d1b1525c64e1059d21",
+          "version": "4.0.4"
+        }
+      },
+      {
+        "package": "SwiftDate",
+        "repositoryURL": "https://github.com/malcommac/SwiftDate.git",
+        "state": {
+          "branch": null,
+          "revision": "a25913b19833860b61fac161a706e44834f03c47",
+          "version": "6.2.0"
+        }
+      },
+      {
+        "package": "Introspect",
+        "repositoryURL": "https://github.com/siteline/SwiftUI-Introspect.git",
+        "state": {
+          "branch": null,
+          "revision": "de5c32c15ae169cfcb27397ffb2734dcd0e1e6d5",
+          "version": "0.1.0"
+        }
+      }
+    ]
+  },
+  "version": 1
+}

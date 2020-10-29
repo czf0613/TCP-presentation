@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">TCP协议测试</string>
+    <string name="http">HTTP协议</string>
+    <string name="ws">WebSocket</string>
+    <string name="test_get">测试GET方法</string>
+    <string name="test_post">测试POST方法</string>
+    <string name="test_del">测试DELETE方法</string>
+    <string name="enter_stuID">请输入学生id</string>
+    <string name="enter_stuName">请输入学生姓名</string>
+    <string name="enter_name">请输入昵称</string>
+    <string name="say_something">和大家说点啥？</string>
+    <string name="get">GET!</string>
+    <string name="post">POST!</string>
+    <string name="delete">DELETE!</string>
+    <string name="join">加入群聊</string>
+    <string name="send">发送</string>
+    <string name="click_to_see">点击请求查看结果</string>
+</resources>

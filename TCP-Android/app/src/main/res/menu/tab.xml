@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/http"
+        android:icon="@drawable/http"
+        android:title="@string/http"/>
+
+    <item
+        android:id="@+id/ws"
+        android:icon="@drawable/socket"
+        android:title="@string/ws"/>
+</menu>
