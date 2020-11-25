@@ -12,8 +12,6 @@
 <script>
 import PDF from 'vue-pdf'
 
-let loadingTask = PDF.createLoadingTask('/static/TCP.pdf')
-
 export default {
   name: "Intro",
   components: {
@@ -22,10 +20,10 @@ export default {
   data() {
     return {
       numPages: 0,
-      source: loadingTask
+      source: PDF.createLoadingTask('/static/TCP.pdf')
     }
   },
-  mounted() {
+  created() {
     this.source.promise.then(pdf => {
       this.numPages = pdf.numPages;
     })
