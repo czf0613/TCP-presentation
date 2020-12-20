@@ -1,4 +1,5 @@
 import json
+import uuid
 import requests
 from kamene.all import *
 from requests_toolbelt.multipart.encoder import MultipartEncoder
@@ -71,17 +72,19 @@ def icmp():
 
 def arp():
     pattern = re.compile(r'((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}')
-    hostname = socket.gethostname()
-    localIP = socket.gethostbyname(hostname)
-
-    print(f'input target ip to find, {localIP} is set by default')
+    print('input target ip to find, 192.168.1.255 by default')
     targetIP = input()
     if len(targetIP.strip()) == 0:
-        targetIP = localIP
+        targetIP = '192.168.1.255'
     if pattern.match(targetIP) is None:
         raise RuntimeError('Wrong IP')
 
-    srp1(Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(pdst=f"{targetIP}/24"), timeout=10)
+    hostname = socket.gethostname()
+    localIP = socket.gethostbyname(hostname)
+    temp = uuid.UUID(int=uuid.getnode()).hex[-12:]
+    mac = ":".join([temp[e:e + 2] for e in range(0, 11, 2)])
+
+    sr1(ARP(op=1, hwsrc=mac, hwdst='00:00:00:00:00:00', psrc=localIP, pdst=targetIP), timeout=10)
 
 
 def udp():
@@ -99,7 +102,8 @@ def udp():
 
 if __name__ == '__main__':
     while True:
-        print(f"""
+        try:
+            print(f"""
 1, send HTTP packs
 2, send WebSocket packs
 3, send ICMP packs
@@ -107,19 +111,22 @@ if __name__ == '__main__':
 5, send UDP packs
 ### you can use ip: {ip} as filter in WireShark ###
 enter the sequence number to select:""")
-        fun = int(input())
-        if fun < 1 or fun > 5:
-            raise RuntimeError('No such method')
+            fun = int(input())
+            if fun < 1 or fun > 5:
+                raise RuntimeError('No such method')
 
-        if fun == 1:
-            http()
-        elif fun == 2:
-            ws()
-        elif fun == 3:
-            icmp()
-        elif fun == 4:
-            arp()
-        elif fun == 5:
-            udp()
+            if fun == 1:
+                http()
+            elif fun == 2:
+                ws()
+            elif fun == 3:
+                icmp()
+            elif fun == 4:
+                arp()
+            elif fun == 5:
+                udp()
 
-        time.sleep(1)
+            time.sleep(1)
+
+        except:
+            print('error!')
