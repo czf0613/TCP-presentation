@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <sys/stat.h>
 
 #define MAX_BYTES 8192
 bool flag = true;
@@ -31,7 +32,7 @@ char *getPrefix() {
 }
 
 char *cd(const char *param) {
-    if (strcmp(param, "..") == 0) {
+    if (strcmp(param, dot_dot) == 0) {
         if (strcmp(current_dir, "/") == 0)
             return current_dir;
         else {
@@ -51,14 +52,16 @@ char *cd(const char *param) {
     } else if (strcmp(param, "~") == 0) {
         strcpy(current_dir, "/home");
         return current_dir;
-    }
+    } else if (strcmp(param, dot) == 0)
+        return current_dir;
 
     char full_path[1024] = {0};
     strcpy(full_path, current_dir);
     if (param[0] != '/') {
         strcat(full_path, "/");
         strcat(full_path, param);
-    }
+    } else
+        strcpy(full_path, param);
 
     DIR *dir = opendir(full_path);
     if (dir == nullptr)
@@ -69,6 +72,7 @@ char *cd(const char *param) {
 }
 
 char *ls() {
+    memset(buff, 0, sizeof buff);
     DIR *dir = opendir(current_dir);
     struct dirent *ptr;
     while ((ptr = readdir(dir)) != nullptr) {
@@ -78,6 +82,7 @@ char *ls() {
         }
     }
     closedir(dir);
+    strcat(buff, "\0");
     return buff;
 }
 
@@ -92,7 +97,7 @@ void mkdir(const char *param) {
     }
 
     strcat(path, param);
-    if (access(path, F_OK) != 0)
+    if (access(path, F_OK) == 0)
         return;
     strcat(cmd_buf, path);
     system(cmd_buf);
@@ -126,7 +131,7 @@ void touch(const char *param) {
     }
 
     strcat(path, param);
-    if (access(path, F_OK) != 0)
+    if (access(path, F_OK) == 0)
         return;
     strcat(cmd_buf, path);
     system(cmd_buf);
@@ -189,6 +194,7 @@ int main() {
         }
 
         puts("connected!");
+        flag = true;
         while (flag) {
             send(connect_fd, getPrefix(), 1024, 0);
 
@@ -198,16 +204,21 @@ int main() {
             if (strcmp(buff, "exit") == 0) {
                 close(connect_fd);
                 flag = false;
+                memset(current_dir, 0, sizeof current_dir);
+                strcpy(current_dir, "/");
             } else if (strcmp(buff, "cd") == 0) {
                 memset(buff, 0, sizeof buff);
                 n = recv(connect_fd, buff, MAX_BYTES, 0);
                 buff[n] = '\0';
+                puts(buff);
                 if (cd(buff) == nullptr)
-                    send(connect_fd, "No such file or directory!", 30, 0);
+                    send(connect_fd, "No such file or directory!\n", 28, 0);
+                else
+                    send(connect_fd, "\0", 1, 0);
             } else if (strcmp(buff, "ls") == 0) {
                 memset(buff, 0, sizeof buff);
                 ls();
-                send(connect_fd, buff, sizeof buff, 0);
+                send(connect_fd, buff, strlen(buff), 0);
             } else if (strcmp(buff, "mkdir") == 0) {
                 memset(buff, 0, sizeof buff);
                 n = recv(connect_fd, buff, MAX_BYTES, 0);
@@ -217,6 +228,7 @@ int main() {
                 memset(buff, 0, sizeof buff);
                 n = recv(connect_fd, buff, MAX_BYTES, 0);
                 buff[n] = '\0';
+                puts(buff);
                 rm(buff);
             } else if (strcmp(buff, "touch") == 0) {
                 memset(buff, 0, sizeof buff);
@@ -227,37 +239,55 @@ int main() {
                 memset(buff, 0, sizeof buff);
                 n = recv(connect_fd, buff, MAX_BYTES, 0);
                 buff[n] = '\0';
-
                 FILE *file = fopen(create_empty_file(buff), "wb");
-                do {
+
+                n = recv(connect_fd, buff, MAX_BYTES, 0);
+                buff[n] = '\0';
+                int cnt = atoi(buff);
+
+                while (cnt > 0) {
                     memset(buff, 0, sizeof buff);
                     n = recv(connect_fd, buff, MAX_BYTES, 0);
-                    fwrite(buff, sizeof buff, 1, file);
+                    cnt -= n;
+                    fwrite(buff, sizeof(char), n, file);
                     printf("recv msg from client, read %d bytes\n", n);
-                } while (n != 0);
+                }
                 fclose(file);
-                send(connect_fd, "successfully updated file.", 30, 0);
+                send(connect_fd, "successfully updated file.\n", 28, 0);
+                puts("finished transfer");
             } else if (strcmp(buff, "download") == 0) {
                 memset(buff, 0, sizeof buff);
                 n = recv(connect_fd, buff, MAX_BYTES, 0);
                 buff[n] = '\0';
 
                 if (get_file_dir(buff) != nullptr) {
+                    puts("sending file to client");
+                    struct stat file_inode{};
+                    stat(get_file_dir(buff), &file_inode);
+                    int size = (int) file_inode.st_size;
+
+                    sprintf(cmd_buf, "%d", size);
+                    send(connect_fd, cmd_buf, strlen(cmd_buf), 0);
+                    usleep(1000000);
+
                     FILE *file = fopen(get_file_dir(buff), "rb");
                     do {
-                        n = fread(buff, sizeof buff, 1, file);
-                        send(connect_fd, buff, MAX_BYTES, 0);
-                        puts("sending file to client");
-                    } while (n != 0);
+                        n = fread(buff, sizeof(char), MAX_BYTES, file);
+                        send(connect_fd, buff, n, 0);
+                        size -= n;
+                        printf("send msg to client, read %d bytes\n", n);
+                    } while (size > 0);
                     fclose(file);
                 } else
-                    send(connect_fd, "No such file!", 30, 0);
+                    send(connect_fd, "No such file!\n", 19, 0);
+                usleep(1000000);
             } else if (strcmp(buff, "kill") == 0) {
                 close(connect_fd);
                 close(listen_fd);
                 exit(999);
             }
             memset(buff, 0, sizeof buff);
+            memset(cmd_buf, 0, sizeof cmd_buf);
         }
     }
 }
