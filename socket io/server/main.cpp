@@ -39,7 +39,7 @@ char *cd(const char *param) {
             int length = strlen(current_dir);
             int index = 1;
             for (int i = length - 1; i > 0; --i) {
-                if (param[i] == '/') {
+                if (current_dir[i] == '/') {
                     index = i;
                     break;
                 }
@@ -210,7 +210,7 @@ int main() {
                 memset(buff, 0, sizeof buff);
                 n = recv(connect_fd, buff, MAX_BYTES, 0);
                 buff[n] = '\0';
-                puts(buff);
+
                 if (cd(buff) == nullptr)
                     send(connect_fd, "No such file or directory!\n", 28, 0);
                 else
@@ -228,7 +228,7 @@ int main() {
                 memset(buff, 0, sizeof buff);
                 n = recv(connect_fd, buff, MAX_BYTES, 0);
                 buff[n] = '\0';
-                puts(buff);
+
                 rm(buff);
             } else if (strcmp(buff, "touch") == 0) {
                 memset(buff, 0, sizeof buff);
@@ -284,7 +284,7 @@ int main() {
             } else if (strcmp(buff, "kill") == 0) {
                 close(connect_fd);
                 close(listen_fd);
-                exit(999);
+                exit(1);
             }
             memset(buff, 0, sizeof buff);
             memset(cmd_buf, 0, sizeof cmd_buf);
