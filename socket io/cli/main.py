@@ -6,7 +6,7 @@ from time import sleep
 ip = '139.155.183.247'
 port = 6666
 flag = True
-max_bytes = 8192
+max_bytes = 1024000
 
 if __name__ == '__main__':
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

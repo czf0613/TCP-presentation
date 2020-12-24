@@ -8,7 +8,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
-#define MAX_BYTES 8192
+#define MAX_BYTES 1024000
 bool flag = true;
 char current_dir[1024] = "/";
 char host_name[256];
